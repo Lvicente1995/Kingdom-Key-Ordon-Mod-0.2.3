@@ -111,7 +111,18 @@ struct Schedule {
         else
             b=rotation(e.rotation);
         b.origin=e.position;
-        Basis q=rotation(d.emitterRotation+d.localRotation.eval(age));q.origin=d.origin+d.localPosition.eval(age);
+        const V3 localRot=d.emitterRotation+d.localRotation.eval(age);
+        Basis q;
+        if(e.definition==5) {
+            // The summon `sho` streak board is authored with {0,-90,-30}:
+            // first align its long local axis to the Keyblade, then roll the
+            // board around that aligned axis.  Feeding the tuple through the
+            // generic Euler path tilts the streaks sideways across Link.
+            q=compose(rotation({localRot.x,localRot.y,0}),rotation({0,0,localRot.z}));
+        } else {
+            q=rotation(localRot);
+        }
+        q.origin=d.origin+d.localPosition.eval(age);
         const V3 s=product(e.scale,d.localScale.eval(age));q.x=q.x*s.x;q.y=q.y*s.y;q.z=q.z*s.z;
         b=compose(b,q);return e.parent<0?b:compose(local(std::size_t(e.parent),eventAge),b);
     }
